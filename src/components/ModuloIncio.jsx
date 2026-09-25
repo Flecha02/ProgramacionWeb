@@ -1,94 +1,107 @@
 import React from 'react';
 
 export default function ModuloInicio() {
-  const alertas = [
-    {
-      id: 1,
-      titulo: 'Alerta Sanitaria: Lote clonado de Analgésicos XYZ',
-      fecha: '24 de Septiembre, 2026',
-      nivel: 'Alta',
-      descripcion: 'Se ha detectado la circulación de lotes falsificados que no cumplen con los registros sanitarios oficiales.'
-    },
-    {
-      id: 2,
-      titulo: 'Aviso de Retiro: Jarabe ABC',
-      fecha: '18 de Septiembre, 2026',
-      nivel: 'Media',
-      descripcion: 'Retiro voluntario por parte del fabricante debido a inconsistencias en la etiqueta del producto.'
-    }
+  const kpis = [
+    { cifra: '10%', titulo: 'Mercado Ilícito', desc: 'De los fármacos circulantes en el país son falsos o adulterados[cite: 2].' },
+    { cifra: 'Q150M', titulo: 'Pérdidas Anuales', desc: 'Pérdidas económicas generadas por el comercio ilícito en Guatemala[cite: 2].' },
+    { cifra: '+280%', titulo: 'Aumento en Decomisos', desc: 'Incremento de incautaciones de mercancía falsa según la SAT[cite: 2].' },
+    { cifra: '100+', titulo: 'Puntos Críticos', desc: 'Lugares identificados de distribución no autorizada[cite: 2].' }
   ];
 
-  const guiasDiferenciacion = [
-    {
-      paso: '1. Empaque y Sellado',
-      detalle: 'Verifica que la caja o envase no tenga sellos rotos, impresiones borrosas o faltas de ortografía en la descripción.'
-    },
-    {
-      paso: '2. Registro Sanitario',
-      detalle: 'Asegúrate de que el código de Registro Sanitario esté visible en la etiqueta o caja del medicamento.'
-    },
-    {
-      paso: '3. Número de Lote y Fecha de Vencimiento',
-      detalle: 'Compara que el número de lote y la fecha de expiración impresos en la caja coincidan exactamente con el blíster o frasco interno.'
-    },
-    {
-      paso: '4. Código DataMatrix / QR de Trazabilidad',
-      detalle: 'Usa la sección "Verificar productos" del sistema para escanear el código y validar la autenticidad en la base de datos oficial.'
-    }
+  const modalidades = [
+    { tipo: 'Sin principio activo', desc: 'Medicamento sin la sustancia farmacológica declarada[cite: 2].', riesgo: 'Tratamiento ineficaz' },
+    { tipo: 'Dosis incorrecta', desc: 'Dosis reducidas o sustituidas por compuestos de menor costo[cite: 2].', riesgo: 'Resistencia / Toxicidad' },
+    { tipo: 'Empaque falsificado', desc: 'Copia de logos, códigos de lote y hologramas oficiales[cite: 2].', riesgo: 'Engaño visual' },
+    { tipo: 'Fármacos de alto costo', desc: 'Falsificación en medicamentos oncológicos, diabetes y vacunas[cite: 2].', riesgo: 'Riesgo vital alto' }
   ];
 
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1000px', margin: '0 auto' }}>
-      {}
-      <section style={{ background: '#e3f2fd', padding: '20px', borderRadius: '8px', marginBottom: '25px', borderLeft: '6px solid #0d47a1' }}>
-        <h1 style={{ color: '#0d47a1', marginTop: 0 }}>Sistema de Trazabilidad de Medicamentos</h1>
-        <p style={{ color: '#333', fontSize: '1.1rem', lineHeight: '1.5' }}>
-          Portal oficial para la consulta de alertas sanitarias y verificación de la autenticidad de productos farmacéuticos.
+    <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: '1100px', margin: '0 auto', display: 'grid', gap: '25px' }}>
+      
+      {/* Banner Principal */}
+      <section style={{ background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 100%)', color: 'white', padding: '30px', borderRadius: '10px' }}>
+        <h1 style={{ margin: '0 0 10px 0', fontSize: '2rem' }}>Sistema Nacional de Trazabilidad de Medicamentos</h1>
+        <p style={{ margin: 0, fontSize: '1.1rem', opacity: 0.9, lineHeight: '1.5' }}>
+          Garantizando la seguridad del paciente desde el laboratorio fabricante hasta la entrega final en hospitales y farmacias[cite: 2].
         </p>
-      </section>
-
-      {}
-      <section style={{ marginBottom: '30px' }}>
-        <h2 style={{ color: '#b71c1c', borderBottom: '2px solid #b71c1c', paddingBottom: '8px' }}>
-          ⚠️ Alertas Sanitarias Recientes
-        </h2>
-        <div style={{ display: 'grid', gap: '15px' }}>
-          {alertas.map((alerta) => (
-            <div key={alerta.id} style={{ background: 'white', padding: '15px 20px', borderRadius: '6px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: 0, color: '#0d47a1' }}>{alerta.titulo}</h3>
-                <span style={{ 
-                  background: alerta.nivel === 'Alta' ? '#ffebee' : '#fff3e0', 
-                  color: alerta.nivel === 'Alta' ? '#c62828' : '#e65100', 
-                  padding: '4px 10px', 
-                  borderRadius: '12px', 
-                  fontSize: '0.85rem', 
-                  fontWeight: 'bold' 
-                }}>
-                  Prioridad {alerta.nivel}
-                </span>
-              </div>
-              <small style={{ color: '#666' }}>Publicado: {alerta.fecha}</small>
-              <p style={{ margin: '10px 0 0 0', color: '#444' }}>{alerta.descripcion}</p>
-            </div>
-          ))}
+        <div style={{ display: 'flex', gap: '15px', marginTop: '20px', flexWrap: 'wrap' }}>
+          <a href="/verificar" style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
+            🔍 Verificar Producto / Escanear QR
+          </a>
+          <a href="/denuncias" style={{ background: '#e65100', color: 'white', padding: '10px 20px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
+            🚨 Reportar Anomaly / Denuncia
+          </a>
         </div>
       </section>
 
-      {}
-      <section style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h2 style={{ color: '#2e7d32', borderBottom: '2px solid #2e7d32', paddingBottom: '8px', marginTop: 0 }}>
-          🔍 ¿Cómo identificar productos falsificados o adulterados?
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px', marginTop: '15px' }}>
-          {guiasDiferenciacion.map((guia, idx) => (
-            <div key={idx} style={{ background: '#f9f9f9', padding: '15px', borderRadius: '6px', border: '1px solid #e0e0e0' }}>
-              <h4 style={{ margin: '0 0 8px 0', color: '#1b5e20' }}>{guia.paso}</h4>
-              <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{guia.detalle}</p>
-            </div>
-          ))}
+      {/* Tarjetas de Estadísticas (KPIs) */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+        {kpis.map((kpi, idx) => (
+          <div key={idx} style={{ background: 'white', padding: '20px', borderRadius: '8px', borderLeft: '5px solid #0d47a1', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+            <h2 style={{ margin: 0, color: '#0d47a1', fontSize: '2.2rem' }}>{kpi.cifra}</h2>
+            <h4 style={{ margin: '5px 0', color: '#333' }}>{kpi.titulo}</h4>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>{kpi.desc}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* Cadena de Trazabilidad explicada */}
+      <section style={{ background: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <h2 style={{ color: '#0d47a1', marginTop: 0 }}>🔗 Ruta Completa de Trazabilidad</h2>
+        <p style={{ color: '#555' }}>Así protege el sistema la cadena de suministro en Guatemala[cite: 2]:</p>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', marginTop: '15px' }}>
+          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
+            <span style={{ fontSize: '2rem' }}>🧪</span>
+            <h4 style={{ margin: '8px 0 4px 0' }}>1. Laboratorio</h4>
+            <small style={{ color: '#666' }}>Asignación de Lote y QR Único[cite: 2].</small>
+          </div>
+          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
+            <span style={{ fontSize: '2rem' }}>🛃</span>
+            <h4 style={{ margin: '8px 0 4px 0' }}>2. Aduanas</h4>
+            <small style={{ color: '#666' }}>Control Sanitario e Ingreso[cite: 2].</small>
+          </div>
+          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
+            <span style={{ fontSize: '2rem' }}>🚛</span>
+            <h4 style={{ margin: '8px 0 4px 0' }}>3. Transporte</h4>
+            <small style={{ color: '#666' }}>Cadena de Frío (2°C a 8°C)[cite: 2].</small>
+          </div>
+          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
+            <span style={{ fontSize: '2rem' }}>🏥</span>
+            <h4 style={{ margin: '8px 0 4px 0' }}>4. Farmacia / Hospital</h4>
+            <small style={{ color: '#666' }}>Recepción y Validación[cite: 2].</small>
+          </div>
+          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
+            <span style={{ fontSize: '2rem' }}>👤</span>
+            <h4 style={{ margin: '8px 0 4px 0' }}>5. Paciente</h4>
+            <small style={{ color: '#666' }}>Consumo Seguro Garantizado[cite: 2].</small>
+          </div>
         </div>
       </section>
+
+      {/* Tabla de Modalidades de Falsificación */}
+      <section style={{ background: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <h2 style={{ color: '#b71c1c', marginTop: 0 }}>⚠️ Modalidades Detectadas de Falsificación</h2>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+          <thead>
+            <tr style={{ background: '#ffebee', color: '#b71c1c', textAlign: 'left' }}>
+              <th style={{ padding: '10px' }}>Modalidad</th>
+              <th style={{ padding: '10px' }}>Descripción</th>
+              <th style={{ padding: '10px' }}>Riesgo Principal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {modalidades.map((item, idx) => (
+              <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: '10px', fontWeight: 'bold' }}>{item.tipo}</td>
+                <td style={{ padding: '10px', color: '#555' }}>{item.desc}</td>
+                <td style={{ padding: '10px', color: '#c62828', fontWeight: 'bold' }}>{item.riesgo}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
     </div>
   );
 }

@@ -1,6 +1,7 @@
 ---
-import ModuloVerificacion from '../components/ModuloVerificacion';
 import ModuloInicio from '../components/ModuloIncio';
+import ModuloVerificacion from '../components/ModuloVerificacion';
+
 ---
 
 <html lang="es">
@@ -15,12 +16,12 @@ import ModuloInicio from '../components/ModuloIncio';
       <a href="/" style="background: #0d47a1; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Inicio</a>
       <a href="/ubicaciones" style="background: #6a1b9a; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Ubicaciones</a>
       <a href="/denuncias" style="background: #e65100; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Denuncias</a>
-      <a href="/verificar" style="background: #2e7d32; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Verificar productos</a>
+      <a href="/verificacion" style="background: #2e7d32; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Verificar productos</a>
       <a href="/comparar-precios" style="background: #b71c1c; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Comparar precios</a>
     </nav>
     <!-- ISLA DE REACT CARGADA DINÁMICAMENTE -->
-    <ModuloVerificacion client:load />
-    <ModuloInicio client:load/>
+    <ModuloInicio client:load />
+    
 
   </body>
 </html>
