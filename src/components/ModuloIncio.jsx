@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function ModuloInicio() {
   const kpis = [
-    { cifra: '10%', titulo: 'Mercado Ilícito', desc: 'De los fármacos circulantes en el país son falsos o adulterados[cite: 2].' },
-    { cifra: 'Q150M', titulo: 'Pérdidas Anuales', desc: 'Pérdidas económicas generadas por el comercio ilícito en Guatemala[cite: 2].' },
-    { cifra: '+280%', titulo: 'Aumento en Decomisos', desc: 'Incremento de incautaciones de mercancía falsa según la SAT[cite: 2].' },
-    { cifra: '100+', titulo: 'Puntos Críticos', desc: 'Lugares identificados de distribución no autorizada[cite: 2].' }
+    { cifra: '10%', titulo: 'Mercado Ilícito', desc: 'De los fármacos circulantes en el país son falsos o adulterados.' },
+    { cifra: 'Q150M', titulo: 'Pérdidas Anuales', desc: 'Pérdidas económicas generadas por el comercio ilícito en Guatemala.' },
+    { cifra: '+280%', titulo: 'Aumento en Decomisos', desc: 'Incremento de incautaciones de mercancía falsa según la SAT.' },
+    { cifra: '100+', titulo: 'Puntos Críticos', desc: 'Lugares identificados de distribución no autorizada.' }
   ];
 
   const modalidades = [
