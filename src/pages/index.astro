@@ -1,11 +1,25 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import ModuloVerificacion from '../components/ModuloVerificacion';
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sistema de Trazabilidad de Medicamentos GT</title>
+  </head>
+  <body style="background-color: #f4f6f8; margin: 0; padding: 20px;">
+    
+    <!-- Barra de Navegación propuesta en tu diseño -->
+    <nav style="display: flex; gap: 10px; margin-bottom: 25px; font-weight: bold; color: white;">
+      <div style="background: #0d47a1; padding: 10px 15px; border-radius: 4px;">Inicio</div>
+      <div style="background: #6a1b9a; padding: 10px 15px; border-radius: 4px;">Ubicaciones</div>
+      <div style="background: #e65100; padding: 10px 15px; border-radius: 4px;">Denuncias</div>
+      <div style="background: #2e7d32; padding: 10px 15px; border-radius: 4px;">Verificar productos</div>
+      <div style="background: #b71c1c; padding: 10px 15px; border-radius: 4px;">Comparar precios</div>
+    </nav>
+
+    <!-- ISLA DE REACT CARGADA DINÁMICAMENTE -->
+    <ModuloVerificacion client:load />
+
+  </body>
+</html>

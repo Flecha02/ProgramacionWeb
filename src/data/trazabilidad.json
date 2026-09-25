@@ -1,0 +1,31 @@
+[
+  {
+    "lote": "GT-240926-01",
+    "nombreMedicamento": "Paracetamol 500 mg",
+    "fabricante": "Laboratorio X Guatemala",
+    "registroSanitario": "PF-45920-2026",
+    "fechaVencimiento": "2028-09-20",
+    "cadenaDeFrioRequerida": "2°C - 8°C",
+    "estadoActual": "En tránsito a Farmacia",
+    "fases": [
+      {
+        "id": 1,
+        "fase": "1. Laboratorio / Fabricación",
+        "entidad": "Laboratorio X Guatemala",
+        "despachador": "Carlos Ruiz (Cod: LAB-99)",
+        "temperatura": "4°C",
+        "fecha": "2026-09-20 08:00",
+        "completado": true
+      },
+      {
+        "id": 2,
+        "fase": "2. Transporte a Distribuidora",
+        "entidad": "Transportes Fríos GT (Placa C-123XYZ)",
+        "despachador": "Mario Gómez (Piloto)",
+        "temperatura": "3.5°C",
+        "fecha": "2026-09-21 10:30",
+        "completado": true
+      }
+    ]
+  }
+]
