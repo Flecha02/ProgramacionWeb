@@ -25,7 +25,7 @@ export default function ModuloInicio() {
           Garantizando la seguridad del paciente desde el laboratorio fabricante hasta la entrega final en hospitales y farmacias[cite: 2].
         </p>
         <div style={{ display: 'flex', gap: '15px', marginTop: '20px', flexWrap: 'wrap' }}>
-          <a href="/verificar" style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
+          <a href="/verificacion" style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
             🔍 Verificar Producto / Escanear QR
           </a>
           <a href="/denuncias" style={{ background: '#e65100', color: 'white', padding: '10px 20px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
