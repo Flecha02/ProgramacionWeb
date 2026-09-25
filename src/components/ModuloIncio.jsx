@@ -9,10 +9,10 @@ export default function ModuloInicio() {
   ];
 
   const modalidades = [
-    { tipo: 'Sin principio activo', desc: 'Medicamento sin la sustancia farmacológica declarada[cite: 2].', riesgo: 'Tratamiento ineficaz' },
-    { tipo: 'Dosis incorrecta', desc: 'Dosis reducidas o sustituidas por compuestos de menor costo[cite: 2].', riesgo: 'Resistencia / Toxicidad' },
-    { tipo: 'Empaque falsificado', desc: 'Copia de logos, códigos de lote y hologramas oficiales[cite: 2].', riesgo: 'Engaño visual' },
-    { tipo: 'Fármacos de alto costo', desc: 'Falsificación en medicamentos oncológicos, diabetes y vacunas[cite: 2].', riesgo: 'Riesgo vital alto' }
+    { tipo: 'Sin principio activo', desc: 'Medicamento sin la sustancia farmacológica declarada.', riesgo: 'Tratamiento ineficaz' },
+    { tipo: 'Dosis incorrecta', desc: 'Dosis reducidas o sustituidas por compuestos de menor costo.', riesgo: 'Resistencia / Toxicidad' },
+    { tipo: 'Empaque falsificado', desc: 'Copia de logos, códigos de lote y hologramas oficiales.', riesgo: 'Engaño visual' },
+    { tipo: 'Fármacos de alto costo', desc: 'Falsificación en medicamentos oncológicos, diabetes y vacunas.', riesgo: 'Riesgo vital alto' }
   ];
 
   return (
@@ -26,10 +26,10 @@ export default function ModuloInicio() {
         </p>
         <div style={{ display: 'flex', gap: '15px', marginTop: '20px', flexWrap: 'wrap' }}>
           <a href="/verificacion" style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
-            🔍 Verificar Producto / Escanear QR
+             Verificar Producto / Escanear QR
           </a>
           <a href="/denuncias" style={{ background: '#e65100', color: 'white', padding: '10px 20px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
-            🚨 Reportar Anomaly / Denuncia
+             Reportar Anomaly / Denuncia
           </a>
         </div>
       </section>
@@ -47,41 +47,41 @@ export default function ModuloInicio() {
 
       {/* Cadena de Trazabilidad explicada */}
       <section style={{ background: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ color: '#0d47a1', marginTop: 0 }}>🔗 Ruta Completa de Trazabilidad</h2>
-        <p style={{ color: '#555' }}>Así protege el sistema la cadena de suministro en Guatemala[cite: 2]:</p>
+        <h2 style={{ color: '#0d47a1', marginTop: 0 }}> Ruta Completa de Trazabilidad</h2>
+        <p style={{ color: '#555' }}>Así protege el sistema la cadena de suministro en Guatemala:</p>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', marginTop: '15px' }}>
           <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>🧪</span>
+            <span style={{ fontSize: '2rem' }}></span>
             <h4 style={{ margin: '8px 0 4px 0' }}>1. Laboratorio</h4>
-            <small style={{ color: '#666' }}>Asignación de Lote y QR Único[cite: 2].</small>
+            <small style={{ color: '#666' }}>Asignación de Lote y QR Único.</small>
           </div>
           <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>🛃</span>
+            <span style={{ fontSize: '2rem' }}></span>
             <h4 style={{ margin: '8px 0 4px 0' }}>2. Aduanas</h4>
-            <small style={{ color: '#666' }}>Control Sanitario e Ingreso[cite: 2].</small>
+            <small style={{ color: '#666' }}>Control Sanitario e Ingreso.</small>
           </div>
           <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>🚛</span>
+            <span style={{ fontSize: '2rem' }}></span>
             <h4 style={{ margin: '8px 0 4px 0' }}>3. Transporte</h4>
-            <small style={{ color: '#666' }}>Cadena de Frío (2°C a 8°C)[cite: 2].</small>
+            <small style={{ color: '#666' }}>Cadena de Frío (2°C a 8°C).</small>
           </div>
           <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>🏥</span>
+            <span style={{ fontSize: '2rem' }}></span>
             <h4 style={{ margin: '8px 0 4px 0' }}>4. Farmacia / Hospital</h4>
-            <small style={{ color: '#666' }}>Recepción y Validación[cite: 2].</small>
+            <small style={{ color: '#666' }}>Recepción y Validación.</small>
           </div>
           <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', textAlign: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>👤</span>
+            <span style={{ fontSize: '2rem' }}></span>
             <h4 style={{ margin: '8px 0 4px 0' }}>5. Paciente</h4>
-            <small style={{ color: '#666' }}>Consumo Seguro Garantizado[cite: 2].</small>
+            <small style={{ color: '#666' }}>Consumo Seguro Garantizado.</small>
           </div>
         </div>
       </section>
 
       {/* Tabla de Modalidades de Falsificación */}
       <section style={{ background: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ color: '#b71c1c', marginTop: 0 }}>⚠️ Modalidades Detectadas de Falsificación</h2>
+        <h2 style={{ color: '#b71c1c', marginTop: 0 }}> Modalidades Detectadas de Falsificación</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
           <thead>
             <tr style={{ background: '#ffebee', color: '#b71c1c', textAlign: 'left' }}>
