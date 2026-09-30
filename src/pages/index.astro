@@ -1,27 +1,11 @@
 ---
-import ModuloInicio from '../components/ModuloIncio';
-import ModuloVerificacion from '../components/ModuloVerificacion';
-
+import Layout from '../layouts/Layout.astro';
+import ModuloInicio from '../components/ModuloIncio.jsx';
 ---
 
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <title>Sistema de Trazabilidad de Medicamentos GT</title>
-  </head>
-  <body style="background-color: #f4f6f8; margin: 0; padding: 20px;">
-    
-    <!-- Barra de Navegación propuesta en tu diseño -->
-    <nav style="display: flex; gap: 10px; margin-bottom: 25px; font-weight: bold;">
-      <a href="/Inicio" style="background: #0d47a1; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Inicio</a>
-      <a href="/ubicaciones" style="background: #6a1b9a; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Ubicaciones</a>
-      <a href="/denuncias" style="background: #e65100; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Denuncias</a>
-      <a href="/verificacion" style="background: #2e7d32; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Verificar productos</a>
-      <a href="/comparar-precios" style="background: #b71c1c; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Comparar precios</a>
-    </nav>
-    <!-- ISLA DE REACT CARGADA DINÁMICAMENTE -->
-    <ModuloInicio client:load />
-    
-
-  </body>
-</html>
+<Layout
+  title="Medicamento Seguro"
+  active="inicio"
+>
+  <ModuloInicio client:load />
+</Layout>

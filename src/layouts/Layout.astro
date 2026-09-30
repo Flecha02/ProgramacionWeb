@@ -1,23 +1,267 @@
+---
+const {
+  title = 'Trazabilidad de Medicamentos',
+  active = ''
+} = Astro.props;
+---
+
 <!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+
+  <body>
+    <div class="fondo-decorativo fondo-1"></div>
+    <div class="fondo-decorativo fondo-2"></div>
+    <div class="fondo-decorativo fondo-3"></div>
+
+    <header class="header">
+      <a href="/" class="marca">
+        <div class="marca-icono">+</div>
+
+        <div>
+          <strong>Medicamento Seguro</strong>
+          <span>Trazabilidad y verificación</span>
+        </div>
+      </a>
+
+      <nav>
+        <a href="/" class={active === 'inicio' ? 'activo' : ''}>
+          Inicio
+        </a>
+
+        <a href="/verificacion" class={active === 'verificacion' ? 'activo' : ''}>
+          Verificar
+        </a>
+
+        <a href="/ubicaciones" class={active === 'ubicaciones' ? 'activo' : ''}>
+          Dónde comprar
+        </a>
+
+        <a href="/comparar-precios" class={active === 'precios' ? 'activo' : ''}>
+          Comparar precios
+        </a>
+
+        <a href="/denuncias" class={active === 'denuncias' ? 'activo' : ''}>
+          Reportar
+        </a>
+      </nav>
+
+      <a href="/institucional" class="acceso">
+        Acceso institucional
+      </a>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+  </body>
 </html>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+<style is:global>
+  :root {
+    --azul-oscuro: #16344D;
+    --azul-medio: #24506E;
+    --turquesa: #64D5DE;
+    --turquesa-claro: #A1E6ED;
+    --frambuesa: #C92D52;
+    --oliva: #B0B067;
+    --rosa: #EF8D9E;
+    --texto: #24313A;
+    --texto-suave: #65737E;
+    --fondo: #EEF6F7;
+    --blanco: #FFFFFF;
+    --borde: #DDE7E8;
+    --verde: #27864A;
+    --amarillo: #D99B27;
+    --rojo: #C73B3B;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(100, 213, 222, 0.20), transparent 32%),
+      radial-gradient(circle at bottom right, rgba(239, 141, 158, 0.16), transparent 30%),
+      linear-gradient(180deg, #EAF7F8 0%, #F7FBFB 45%, #EEF6F7 100%);
+    color: var(--texto);
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  .fondo-decorativo {
+    position: fixed;
+    border-radius: 999px;
+    filter: blur(12px);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+
+  .fondo-1 {
+    width: 340px;
+    height: 340px;
+    background: rgba(100, 213, 222, 0.28);
+    top: 130px;
+    left: -80px;
+  }
+
+  .fondo-2 {
+    width: 300px;
+    height: 300px;
+    background: rgba(239, 141, 158, 0.22);
+    top: 420px;
+    right: -70px;
+  }
+
+  .fondo-3 {
+    width: 260px;
+    height: 260px;
+    background: rgba(176, 176, 103, 0.18);
+    bottom: 70px;
+    left: 10%;
+  }
+
+  .header {
+    min-height: 82px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 10px 28px rgba(18, 42, 61, 0.22);
+  }
+
+  .marca {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 250px;
+  }
+
+  .marca-icono {
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, var(--frambuesa) 0%, #DF4D74 100%);
+    color: white;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(201, 45, 82, 0.30);
+  }
+
+  .marca strong {
+    display: block;
+    font-size: 16px;
+  }
+
+  .marca span {
+    display: block;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  nav a {
+    color: rgba(255, 255, 255, 0.78);
+    text-decoration: none;
+    padding: 11px 14px;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease;
+  }
+
+  nav a:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: white;
+  }
+
+  nav a.activo {
+    color: var(--frambuesa);
+    background: white;
+    box-shadow: 0 10px 24px rgba(16, 30, 44, 0.12);
+  }
+
+  .acceso {
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    border-radius: 12px;
+    padding: 11px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: 0.2s ease;
+  }
+
+  .acceso:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  main {
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 950px) {
+    .header {
+      align-items: flex-start;
+      flex-wrap: wrap;
+      padding: 14px 18px;
+      gap: 12px;
+    }
+
+    nav {
+      order: 3;
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    nav a {
+      white-space: nowrap;
+    }
+
+    .acceso {
+      margin-left: auto;
+    }
+  }
 </style>

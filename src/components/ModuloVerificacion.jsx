@@ -1,448 +1,878 @@
-import { useState, useEffect } from 'react';
-import datosBase from '../data/trazabilidad.json';
-
-// Flujo secuencial oficial de 9 pasos estrictos
-const FLUJO_ESTACIONES = [
-  'Registrado en Planta (Laboratorio)',
-  'Transporte Primario (Hacia Aduana/Distribuidora)',
-  'Inspección Sanitaria en Aduana / MSPAS',
-  'Ingreso a Centro de Distribución',
-  'Transporte Secundario (Hacia Droguería/Farmacia)',
-  'Recibido en Droguería / Almacén Regional',
-  'En camino a Farmacia / Hospital / Centro de Salud',
-  'Disponible en Farmacia / Centro de Salud',
-  'Entregado al Consumidor Final (Paciente)'
-];
+import { useEffect, useState } from 'react';
+import datosIniciales from '../data/trazabilidad.json';
 
 export default function ModuloVerificacion() {
-  const [db, setDb] = useState({ lotes: [], productos: [] });
-  const [modoBusqueda, setModoBusqueda] = useState('producto');
-  const [query, setQuery] = useState('PROD-1001');
-  
-  const [resultadoProducto, setResultadoProducto] = useState(null);
-  const [resultadoLote, setResultadoLote] = useState(null);
-  const [pestana, setPestana] = useState('verificar');
-
-  // Formulario Avanzar Estado
-  const [nuevoPaso, setNuevoPaso] = useState({
-    faseIndex: 1,
-    fase: FLUJO_ESTACIONES[1],
-    lugar: '',
-    detalle: ''
-  });
-
-  // Formulario Crear Lote
-  const [nuevoLote, setNuevoLote] = useState({
-    loteId: '',
-    nombreMedicamento: '',
-    fabricante: '',
-    registroSanitario: '',
-    fechaVencimiento: '',
-    cadenaDeFrio: '2°C - 8°C'
-  });
-
-  // Formulario Crear Producto
-  const [nuevoProducto, setNuevoProducto] = useState({
-    productoId: '',
-    loteIdRef: '',
-    clienteDestino: ''
-  });
+  const [productos, setProductos] = useState([]);
+  const [codigo, setCodigo] = useState('GT-240926-01');
+  const [productoEncontrado, setProductoEncontrado] = useState(null);
+  const [busquedaRealizada, setBusquedaRealizada] = useState(false);
 
   useEffect(() => {
-    const local = localStorage.getItem('trazabilidad_temu_v5');
-    if (local) {
-      const parsed = JSON.parse(local);
-      setDb(parsed);
-      buscar(parsed, 'PROD-1001', 'producto');
+    const guardados = localStorage.getItem('trazabilidad_estricta_v2');
+
+    if (guardados) {
+      const data = JSON.parse(guardados);
+      setProductos(data);
+      const inicial = data.find(p => p.lote === 'GT-240926-01');
+
+      if (inicial) {
+        setProductoEncontrado(inicial);
+        setBusquedaRealizada(true);
+      }
     } else {
-      // Normalizar datos iniciales asignando índices explícitos
-      const dbNormalizada = {
-        lotes: datosBase.lotes || [],
-        productos: (datosBase.productos || []).map(prod => ({
-          ...prod,
-          pasoActualIndex: 3, // Iniciar en Centro de Distribución por defecto para pruebas
-          historialSeguimiento: [
-            { pasoIndex: 0, fase: FLUJO_ESTACIONES[0], lugar: 'Planta Lancasco', fecha: '2026-09-20 08:00 AM', completado: true, detalle: 'Lote registrado' },
-            { pasoIndex: 1, fase: FLUJO_ESTACIONES[1], lugar: 'Camión Termoking', fecha: '2026-09-21 10:30 AM', completado: true, detalle: 'Piloto: M. Gómez' },
-            { pasoIndex: 2, fase: FLUJO_ESTACIONES[2], lugar: 'Aduana Central MSPAS', fecha: '2026-09-22 02:15 PM', completado: true, detalle: 'Inspección aprobada' },
-            { pasoIndex: 3, fase: FLUJO_ESTACIONES[3], lugar: 'Distribuidora Xela', fecha: '2026-09-23 09:00 AM', completado: true, detalle: 'Recepción en bodega' }
-          ]
-        }))
-      };
-      setDb(dbNormalizada);
-      localStorage.setItem('trazabilidad_temu_v5', JSON.stringify(dbNormalizada));
-      buscar(dbNormalizada, 'PROD-1001', 'producto');
+      setProductos(datosIniciales);
+      localStorage.setItem(
+        'trazabilidad_estricta_v2',
+        JSON.stringify(datosIniciales)
+      );
+
+      const inicial = datosIniciales.find(
+        p => p.lote === 'GT-240926-01'
+      );
+
+      if (inicial) {
+        setProductoEncontrado(inicial);
+        setBusquedaRealizada(true);
+      }
     }
   }, []);
 
-  const guardarStorage = (nuevaDb) => {
-    setDb(nuevaDb);
-    localStorage.setItem('trazabilidad_temu_v5', JSON.stringify(nuevaDb));
-  };
-
-  const buscar = (dataState, termino, tipo) => {
-    const data = dataState || db;
-    if (tipo === 'producto') {
-      const prod = data.productos.find(p => p.productoId.toLowerCase() === termino.trim().toLowerCase());
-      if (prod) {
-        prod.vecesEscaneado = (prod.vecesEscaneado || 0) + 1;
-        const lotePadre = data.lotes.find(l => l.loteId === prod.loteIdRef);
-        setResultadoProducto({ ...prod, loteInfo: lotePadre });
-        setResultadoLote(null);
-
-        // Calcular el índice de la siguiente estación
-        const ultimoIndex = prod.pasoActualIndex !== undefined ? prod.pasoActualIndex : (prod.historialSeguimiento.length - 1);
-        const siguienteIdx = ultimoIndex + 1;
-
-        if (siguienteIdx < FLUJO_ESTACIONES.length) {
-          setNuevoPaso({
-            faseIndex: siguienteIdx,
-            fase: FLUJO_ESTACIONES[siguienteIdx],
-            lugar: '',
-            detalle: ''
-          });
-        }
-
-        guardarStorage(data);
-      } else {
-        setResultadoProducto(null);
-      }
-    } else {
-      const lote = data.lotes.find(l => l.loteId.toLowerCase() === termino.trim().toLowerCase());
-      if (lote) {
-        const prodsVinculados = data.productos.filter(p => p.loteIdRef === lote.loteId);
-        setResultadoLote({ ...lote, productos: prodsVinculados });
-        setResultadoProducto(null);
-      } else {
-        setResultadoLote(null);
-      }
-    }
-  };
-
-  const handleBuscar = (e) => {
+  const buscarProducto = e => {
     e.preventDefault();
-    buscar(db, query, modoBusqueda);
-  };
 
-  const handleAvanzarEstado = (e) => {
-    e.preventDefault();
-    if (!resultadoProducto) return;
+    const codigoLimpio = codigo.trim().toLowerCase();
 
-    const idxSeleccionado = Number(nuevoPaso.faseIndex);
-    const nombreFase = FLUJO_ESTACIONES[idxSeleccionado];
+    const encontrado = productos.find(
+      p =>
+        p.lote?.toLowerCase() === codigoLimpio ||
+        p.identificador?.toLowerCase() === codigoLimpio
+    );
 
-    const nuevaEntrada = {
-      pasoIndex: idxSeleccionado,
-      fase: nombreFase,
-      lugar: nuevoPaso.lugar,
-      fecha: new Date().toLocaleString(),
-      completado: true,
-      detalle: nuevoPaso.detalle
-    };
+    setBusquedaRealizada(true);
 
-    const productosActualizados = db.productos.map(p => {
-      if (p.productoId === resultadoProducto.productoId) {
-        return {
-          ...p,
-          pasoActualIndex: idxSeleccionado,
-          estadoActual: nombreFase,
-          historialSeguimiento: [...p.historialSeguimiento, nuevaEntrada]
-        };
-      }
-      return p;
-    });
-
-    const nuevaDb = { ...db, productos: productosActualizados };
-    guardarStorage(nuevaDb);
-    
-    const prodActualizado = productosActualizados.find(p => p.productoId === resultadoProducto.productoId);
-    const lotePadre = db.lotes.find(l => l.loteId === prodActualizado.loteIdRef);
-    setResultadoProducto({ ...prodActualizado, loteInfo: lotePadre });
-
-    const siguienteIdx = idxSeleccionado + 1;
-    if (siguienteIdx < FLUJO_ESTACIONES.length) {
-      setNuevoPaso({ 
-        faseIndex: siguienteIdx, 
-        fase: FLUJO_ESTACIONES[siguienteIdx], 
-        lugar: '', 
-        detalle: '' 
-      });
-    }
-
-    alert(`📍 ¡Paso ${idxSeleccionado + 1}/${FLUJO_ESTACIONES.length} registrado: "${nombreFase}"!`);
-  };
-
-  const handleCrearLote = (e) => {
-    e.preventDefault();
-    const nuevaDb = { ...db, lotes: [...db.lotes, nuevoLote] };
-    guardarStorage(nuevaDb);
-    alert(`✅ Lote ${nuevoLote.loteId} creado correctamente.`);
-    setNuevoLote({ loteId: '', nombreMedicamento: '', fabricante: '', registroSanitario: '', fechaVencimiento: '', cadenaDeFrio: '2°C - 8°C' });
-  };
-
-  const handleCrearProducto = (e) => {
-    e.preventDefault();
-    const loteExiste = db.lotes.find(l => l.loteId === nuevoProducto.loteIdRef);
-    if (!loteExiste) {
-      alert("❌ El ID de Lote referenciado no existe.");
+    if (!encontrado) {
+      setProductoEncontrado(null);
       return;
     }
 
-    const prodObj = {
-      productoId: nuevoProducto.productoId,
-      loteIdRef: nuevoProducto.loteIdRef,
-      pasoActualIndex: 0,
-      estadoActual: FLUJO_ESTACIONES[0],
-      clienteDestino: nuevoProducto.clienteDestino,
-      vecesEscaneado: 1,
-      historialSeguimiento: [
-        {
-          pasoIndex: 0,
-          fase: FLUJO_ESTACIONES[0],
-          lugar: loteExiste.fabricante,
-          fecha: new Date().toLocaleString(),
-          completado: true,
-          detalle: 'Unidad empaquetada y asignada con QR único.'
-        }
-      ]
+    const actualizado = {
+      ...encontrado,
+      vecesEscaneado: (encontrado.vecesEscaneado || 0) + 1
     };
 
-    const nuevaDb = { ...db, productos: [...db.productos, prodObj] };
-    guardarStorage(nuevaDb);
-    alert(`📦 Producto ${nuevoProducto.productoId} vinculado al Lote ${nuevoProducto.loteIdRef}`);
-    setQuery(nuevoProducto.productoId);
-    setModoBusqueda('producto');
-    setPestana('verificar');
-    buscar(nuevaDb, nuevoProducto.productoId, 'producto');
+    const nuevaLista = productos.map(p =>
+      p.lote === encontrado.lote ? actualizado : p
+    );
+
+    setProductos(nuevaLista);
+    setProductoEncontrado(actualizado);
+
+    localStorage.setItem(
+      'trazabilidad_estricta_v2',
+      JSON.stringify(nuevaLista)
+    );
   };
 
-  // Determinar el índice actual del producto cargado
-  const ultimoPasoIndex = resultadoProducto 
-    ? (resultadoProducto.pasoActualIndex !== undefined 
-        ? resultadoProducto.pasoActualIndex 
-        : resultadoProducto.historialSeguimiento.length - 1)
-    : 0;
+  const obtenerEstado = producto => {
+    if (!producto) return null;
 
-  // Filtrar estaciones estrictamente posteriores
-  const opcionesRestantes = FLUJO_ESTACIONES.map((nombre, idx) => ({ index: idx, nombre }))
-    .filter(item => item.index > ultimoPasoIndex);
+    if (producto.estadoGeneral?.toLowerCase().includes('destruido')) {
+      return {
+        titulo: 'Producto retirado',
+        texto: 'Este producto registra un estado de retiro o destrucción.',
+        fondo: '#FDEBEC',
+        borde: '#C73B3B',
+        color: '#A52A2A',
+        icono: '!'
+      };
+    }
+
+    if (producto.alertaReportada) {
+      return {
+        titulo: 'Verificado con advertencia',
+        texto: 'El identificador existe, pero presenta una alerta registrada.',
+        fondo: '#FFF6E5',
+        borde: '#D99B27',
+        color: '#9A6811',
+        icono: '!'
+      };
+    }
+
+    return {
+      titulo: 'Producto reconocido',
+      texto: 'El identificador existe y cuenta con información de trazabilidad.',
+      fondo: '#EAF7EF',
+      borde: '#27864A',
+      color: '#1E6D3B',
+      icono: '✓'
+    };
+  };
+
+  const obtenerActividad = producto => {
+    const escaneos = producto?.vecesEscaneado || 0;
+
+    if (escaneos >= 20) {
+      return {
+        titulo: 'Actividad inusual',
+        texto: 'Este identificador registra una cantidad alta de consultas. Se recomienda revisar su historial.',
+        color: '#C73B3B',
+        fondo: '#FDEBEC'
+      };
+    }
+
+    if (escaneos >= 10) {
+      return {
+        titulo: 'Actividad moderada',
+        texto: 'El identificador ha sido consultado varias veces. Esto no significa automáticamente que sea falso.',
+        color: '#9A6811',
+        fondo: '#FFF6E5'
+      };
+    }
+
+    return {
+      titulo: 'Actividad normal',
+      texto: 'No se observan patrones inusuales de consulta en esta demostración.',
+      color: '#1E6D3B',
+      fondo: '#EAF7EF'
+    };
+  };
+
+  const estado = obtenerEstado(productoEncontrado);
+  const actividad = obtenerActividad(productoEncontrado);
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
-      
-      {/* Navegación */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <button onClick={() => setPestana('verificar')} style={{ padding: '10px 16px', background: pestana === 'verificar' ? '#0f172a' : '#e2e8f0', color: pestana === 'verificar' ? 'white' : 'black', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-          🔎 Rastrear (Temu Tracking)
-        </button>
-        <button onClick={() => setPestana('crearLote')} style={{ padding: '10px 16px', background: pestana === 'crearLote' ? '#2563eb' : '#e2e8f0', color: pestana === 'crearLote' ? 'white' : 'black', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-          🏭 Crear Lote Madre
-        </button>
-        <button onClick={() => setPestana('crearProducto')} style={{ padding: '10px 16px', background: pestana === 'crearProducto' ? '#16a34a' : '#e2e8f0', color: pestana === 'crearProducto' ? 'white' : 'black', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-          📦 Registrar Producto Individual
-        </button>
-      </div>
+    <div
+      style={{
+        maxWidth: '1180px',
+        margin: '0 auto',
+        padding: '42px 24px 70px'
+      }}
+    >
+      <section
+        style={{
+          marginBottom: '30px'
+        }}
+      >
+        <span
+          style={{
+            color: '#C92D52',
+            fontSize: '14px',
+            fontWeight: '800'
+          }}
+        >
+          VERIFICACIÓN DE MEDICAMENTOS
+        </span>
 
-      {/* RASTREO */}
-      {pestana === 'verificar' && (
-        <div>
-          <form onSubmit={handleBuscar} style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', gap: '15px', marginBottom: '10px' }}>
-              <label style={{ fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}>
-                <input type="radio" name="tipo" checked={modoBusqueda === 'producto'} onChange={() => setModoBusqueda('producto')} />
-                📦 Buscar por ID de Producto Individual
-              </label>
-              <label style={{ fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}>
-                <input type="radio" name="tipo" checked={modoBusqueda === 'lote'} onChange={() => setModoBusqueda('lote')} />
-                🏭 Buscar por Número de Lote Madre
-              </label>
+        <h1
+          style={{
+            fontSize: '2.5rem',
+            margin: '8px 0 12px',
+            color: '#24313A'
+          }}
+        >
+          Comprueba la procedencia de tu medicamento
+        </h1>
+
+        <p
+          style={{
+            color: '#65737E',
+            maxWidth: '760px',
+            lineHeight: '1.7',
+            fontSize: '1.05rem'
+          }}
+        >
+          Ingresa el identificador del producto para consultar su lote,
+          fabricante, registro sanitario y recorrido dentro de la cadena de
+          distribución.
+        </p>
+      </section>
+
+      <section
+  style={{
+    background: 'linear-gradient(135deg, #C92D52 0%, #E25379 100%)',
+    border: '1px solid rgba(255,255,255,0.18)',
+    borderRadius: '22px',
+    padding: '28px',
+    marginBottom: '26px',
+    boxShadow: '0 22px 42px rgba(201, 45, 82, 0.18)'
+  }}
+>
+  <div style={{ marginBottom: '12px' }}>
+    <span
+      style={{
+        display: 'inline-block',
+        background: 'rgba(255,255,255,0.16)',
+        color: 'white',
+        padding: '7px 12px',
+        borderRadius: '999px',
+        fontSize: '12px',
+        fontWeight: '800'
+      }}
+    >
+      BÚSQUEDA PRINCIPAL
+    </span>
+  </div>
+
+  <form
+    onSubmit={buscarProducto}
+    style={{
+      display: 'flex',
+      gap: '12px',
+      flexWrap: 'wrap'
+    }}
+  >
+    <input
+      type="text"
+      value={codigo}
+      onChange={e => setCodigo(e.target.value)}
+      placeholder="Ejemplo: MED-GT-2026-X8A73M92L"
+      style={{
+        flex: '1 1 500px',
+        padding: '15px 16px',
+        border: '1px solid rgba(255,255,255,0.35)',
+        borderRadius: '12px',
+        fontSize: '16px',
+        outline: 'none',
+        background: 'rgba(255,255,255,0.96)',
+        color: '#24313A'
+      }}
+    />
+
+    <button
+      type="submit"
+      style={{
+        background: 'white',
+        color: '#C92D52',
+        border: 'none',
+        borderRadius: '12px',
+        padding: '15px 24px',
+        fontWeight: '800',
+        cursor: 'pointer',
+        boxShadow: '0 10px 24px rgba(0,0,0,0.10)'
+      }}
+    >
+      Verificar medicamento
+    </button>
+  </form>
+
+  <p
+    style={{
+      color: 'rgba(255,255,255,0.82)',
+      fontSize: '13px',
+      margin: '14px 0 0'
+    }}
+  >
+    
+  </p>
+</section>
+
+      {busquedaRealizada && !productoEncontrado && (
+        <section
+          style={{
+            background: '#FFF3F5',
+            border: '1px solid #F1C5D0',
+            borderRadius: '18px',
+            padding: '30px'
+          }}
+        >
+          <div
+            style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '15px',
+              background: '#C92D52',
+              color: 'white',
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: '25px',
+              fontWeight: '800',
+              marginBottom: '18px'
+            }}
+          >
+            !
+          </div>
+
+          <h2
+            style={{
+              margin: '0 0 10px',
+              color: '#9B2341'
+            }}
+          >
+            No podemos verificar este producto
+          </h2>
+
+          <p
+            style={{
+              color: '#65737E',
+              lineHeight: '1.7',
+              maxWidth: '780px'
+            }}
+          >
+            El identificador no se encuentra registrado en el sistema de
+            demostración. Esto no significa automáticamente que el medicamento
+            sea falso, pero su procedencia no puede comprobarse con la
+            información disponible.
+          </p>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              flexWrap: 'wrap',
+              marginTop: '20px'
+            }}
+          >
+            <a
+              href="/denuncias"
+              style={{
+                background: '#C92D52',
+                color: 'white',
+                padding: '11px 18px',
+                borderRadius: '9px',
+                textDecoration: 'none',
+                fontWeight: '700'
+              }}
+            >
+              Reportar irregularidad
+            </a>
+
+            <a
+              href="/ubicaciones"
+              style={{
+                background: 'white',
+                color: '#C92D52',
+                padding: '11px 18px',
+                borderRadius: '9px',
+                textDecoration: 'none',
+                border: '1px solid #C92D52',
+                fontWeight: '700'
+              }}
+            >
+              Buscar punto autorizado
+            </a>
+          </div>
+        </section>
+      )}
+
+      {productoEncontrado && (
+        <>
+          <section
+            style={{
+              background: estado.fondo,
+              border: `1px solid ${estado.borde}`,
+              borderRadius: '18px',
+              padding: '24px',
+              marginBottom: '22px',
+              display: 'flex',
+              gap: '18px',
+              alignItems: 'center'
+            }}
+          >
+            <div
+              style={{
+                width: '52px',
+                height: '52px',
+                minWidth: '52px',
+                borderRadius: '15px',
+                background: estado.borde,
+                color: 'white',
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: '25px',
+                fontWeight: '800'
+              }}
+            >
+              {estado.icono}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input 
-                type="text" 
-                value={query} 
-                onChange={(e) => setQuery(e.target.value)} 
-                placeholder={modoBusqueda === 'producto' ? "Ej: PROD-1001" : "Ej: GT-240926-01"} 
-                style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #94a3b8' }}
+            <div>
+              <h2
+                style={{
+                  margin: '0 0 5px',
+                  color: estado.color
+                }}
+              >
+                {estado.titulo}
+              </h2>
+
+              <p
+                style={{
+                  margin: 0,
+                  color: '#536169'
+                }}
+              >
+                {estado.texto}
+              </p>
+            </div>
+          </section>
+
+          <section
+            style={{
+              background: 'white',
+              border: '1px solid #DDE7E8',
+              borderRadius: '18px',
+              padding: '28px',
+              marginBottom: '22px'
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: '20px',
+                flexWrap: 'wrap',
+                marginBottom: '24px'
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    color: '#C92D52',
+                    fontWeight: '800',
+                    fontSize: '13px'
+                  }}
+                >
+                  MEDICAMENTO
+                </span>
+
+                <h2
+                  style={{
+                    margin: '6px 0 8px',
+                    fontSize: '2rem'
+                  }}
+                >
+                  {productoEncontrado.nombreMedicamento}
+                </h2>
+
+                <p
+                  style={{
+                    margin: 0,
+                    color: '#65737E'
+                  }}
+                >
+                  Fabricante: <strong>{productoEncontrado.fabricante}</strong>
+                </p>
+              </div>
+
+              <div
+                style={{
+                  background: '#F6FAFA',
+                  borderRadius: '12px',
+                  padding: '15px 18px',
+                  minWidth: '230px'
+                }}
+              >
+                <span
+                  style={{
+                    color: '#65737E',
+                    fontSize: '12px'
+                  }}
+                >
+                  Estado de distribución
+                </span>
+
+                <strong
+                  style={{
+                    display: 'block',
+                    marginTop: '5px',
+                    color: '#24313A'
+                  }}
+                >
+                  {productoEncontrado.estadoGeneral}
+                </strong>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+                gap: '18px',
+                borderTop: '1px solid #E7EEEE',
+                paddingTop: '22px'
+              }}
+            >
+              <Dato
+                titulo="Identificador"
+                valor={productoEncontrado.identificador || productoEncontrado.lote}
               />
-              <button type="submit" style={{ padding: '10px 20px', background: '#e65100', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                Rastrear
-              </button>
+
+              <Dato
+                titulo="Lote"
+                valor={productoEncontrado.lote}
+              />
+
+              <Dato
+                titulo="Registro sanitario"
+                valor={productoEncontrado.registroSanitario}
+              />
+
+              <Dato
+                titulo="Fecha de fabricación"
+                valor={productoEncontrado.fechaFabricacion || 'No disponible'}
+              />
+
+              <Dato
+                titulo="Fecha de vencimiento"
+                valor={productoEncontrado.fechaVencimiento}
+              />
+
+              <Dato
+                titulo="Distribuidor autorizado"
+                valor={
+                  productoEncontrado.distribuidorAutorizado ||
+                  'No disponible'
+                }
+              />
+
+              <Dato
+                titulo="Establecimiento receptor"
+                valor={
+                  productoEncontrado.establecimientoReceptor ||
+                  'No disponible'
+                }
+              />
+
+              <Dato
+                titulo="Cadena de frío requerida"
+                valor={productoEncontrado.cadenaDeFrioRequerida}
+              />
             </div>
-          </form>
+          </section>
 
-          {/* VISTA PRODUCTO INDIVIDUAL */}
-          {modoBusqueda === 'producto' && resultadoProducto ? (
-            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #f1f5f9', paddingBottom: '12px', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <h2 style={{ margin: '0 0 4px 0', color: '#1e293b' }}>Producto: {resultadoProducto.productoId}</h2>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
-                    Medicamento: <strong>{resultadoProducto.loteInfo?.nombreMedicamento || 'N/A'}</strong> | Lote Padre: <strong>{resultadoProducto.loteIdRef}</strong>
-                  </p>
-                </div>
-                <div>
-                  <span style={{ background: '#ffedf7', color: '#c2185b', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold', fontSize: '13px' }}>
-                    📲 Escaneado {resultadoProducto.vecesEscaneado} veces
-                  </span>
-                </div>
-              </div>
+          <section
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '18px',
+              marginBottom: '32px'
+            }}
+          >
+            <div
+              style={{
+                background: actividad.fondo,
+                borderRadius: '16px',
+                padding: '22px'
+              }}
+            >
+              <span
+                style={{
+                  color: '#65737E',
+                  fontSize: '13px',
+                  fontWeight: '700'
+                }}
+              >
+                ACTIVIDAD DEL IDENTIFICADOR
+              </span>
 
-              {/* FORMULARIO ESTRICTO POR ÍNDICE */}
-              <div style={{ background: '#fff7ed', border: '1px dashed #f97316', padding: '15px', borderRadius: '8px', marginBottom: '25px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#c2410c' }}>➕ Avanzar Siguiente Estación en la Cadena de Custodia</h4>
-                
-                {opcionesRestantes.length > 0 ? (
-                  <form onSubmit={handleAvanzarEstado} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div>
-                      <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Siguiente Estación Permitida *</label>
-                      <select 
-                        value={nuevoPaso.faseIndex} 
-                        onChange={e => {
-                          const idx = Number(e.target.value);
-                          setNuevoPaso({ ...nuevoPaso, faseIndex: idx, fase: FLUJO_ESTACIONES[idx] });
-                        }} 
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
-                      >
-                        {opcionesRestantes.map((item) => (
-                          <option key={item.index} value={item.index}>
-                            Paso {item.index + 1}: {item.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+              <h3
+                style={{
+                  color: actividad.color,
+                  margin: '8px 0'
+                }}
+              >
+                {actividad.titulo}
+              </h3>
 
-                    <div>
-                      <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Ubicación / Puesto de Control *</label>
-                      <input required placeholder="Ej: Droguería San José / Unidad T-2" value={nuevoPaso.lugar} onChange={e => setNuevoPaso({...nuevoPaso, lugar: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }} />
-                    </div>
+              <strong
+                style={{
+                  fontSize: '1.8rem',
+                  color: '#24313A'
+                }}
+              >
+                {productoEncontrado.vecesEscaneado || 0} consultas
+              </strong>
 
-                    <div style={{ gridColumn: 'span 2' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Detalles / Inspección / Temp *</label>
-                      <input required placeholder="Ej: Temp 4.0°C - Placa C-123XYZ - Responsable: Licda. Sosa" value={nuevoPaso.detalle} onChange={e => setNuevoPaso({...nuevoPaso, detalle: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }} />
-                    </div>
+              <p
+                style={{
+                  color: '#65737E',
+                  lineHeight: '1.6',
+                  marginBottom: 0
+                }}
+              >
+                {actividad.texto}
+              </p>
+            </div>
 
-                    <button type="submit" style={{ gridColumn: 'span 2', padding: '10px', background: '#f97316', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', marginTop: '5px' }}>
-                      🚀 Registrar Cambio de Estado
-                    </button>
-                  </form>
-                ) : (
-                  <p style={{ margin: 0, color: '#15803d', fontWeight: 'bold' }}>
-                    ✅ Este producto ha completado la totalidad de las 9 estaciones de la cadena de suministro hasta el consumidor final.
-                  </p>
-                )}
-              </div>
+            <div
+              style={{
+                background: '#E8F8FA',
+                borderRadius: '16px',
+                padding: '22px'
+              }}
+            >
+              <span
+                style={{
+                  color: '#65737E',
+                  fontSize: '13px',
+                  fontWeight: '700'
+                }}
+              >
+                CADENA DE FRÍO
+              </span>
 
-              {/* TIMELINE VISUAL ESTILO TEMU */}
-              <h3 style={{ color: '#0f172a', marginBottom: '20px' }}>🚚 Historial de Tracking en Vivo:</h3>
-              <div style={{ position: 'relative', paddingLeft: '20px', borderLeft: '3px solid #16a34a' }}>
-                {resultadoProducto.historialSeguimiento.map((paso, idx) => (
-                  <div key={idx} style={{ marginBottom: '24px', position: 'relative' }}>
-                    <div style={{ 
-                      position: 'absolute', 
-                      left: '-28px', 
-                      top: '2px', 
-                      width: '14px', 
-                      height: '14px', 
-                      borderRadius: '50%', 
-                      background: '#16a34a',
-                      border: '3px solid white',
-                      boxShadow: '0 0 0 2px #16a34a'
-                    }} />
+              <h3
+                style={{
+                  color: '#287980',
+                  margin: '8px 0'
+                }}
+              >
+                Rango requerido
+              </h3>
 
-                    <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong style={{ color: '#15803d', fontSize: '15px' }}>
-                          ✅ Paso {paso.pasoIndex !== undefined ? paso.pasoIndex + 1 : idx + 1}: {paso.fase}
-                        </strong>
-                        <small style={{ color: '#94a3b8' }}>{paso.fecha}</small>
-                      </div>
-                      <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#334155' }}>
-                        <strong>Ubicación:</strong> {paso.lugar}
-                      </p>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-                        {paso.detalle}
-                      </p>
-                    </div>
+              <strong
+                style={{
+                  fontSize: '1.8rem',
+                  color: '#24313A'
+                }}
+              >
+                {productoEncontrado.cadenaDeFrioRequerida}
+              </strong>
+
+              <p
+                style={{
+                  color: '#65737E',
+                  lineHeight: '1.6',
+                  marginBottom: 0
+                }}
+              >
+                Las temperaturas mostradas en esta demostración provienen de
+                registros simulados de cada evento logístico.
+              </p>
+            </div>
+          </section>
+
+          <section>
+            <div
+              style={{
+                marginBottom: '20px'
+              }}
+            >
+              <span
+                style={{
+                  color: '#C92D52',
+                  fontSize: '13px',
+                  fontWeight: '800'
+                }}
+              >
+                CADENA DE CUSTODIA
+              </span>
+
+              <h2
+                style={{
+                  margin: '7px 0 5px'
+                }}
+              >
+                Ruta de trazabilidad
+              </h2>
+
+              <p
+                style={{
+                  color: '#65737E',
+                  margin: 0
+                }}
+              >
+                Eventos registrados desde la fabricación hasta la entrega.
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px'
+              }}
+            >
+              {productoEncontrado.fases.map((fase, index) => (
+                <div
+                  key={fase.id || index}
+                  style={{
+                    background: 'white',
+                    border: '1px solid #DDE7E8',
+                    borderRadius: '16px',
+                    padding: '22px',
+                    display: 'grid',
+                    gridTemplateColumns: '58px 1fr',
+                    gap: '18px'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '14px',
+                      background: index === 0 ? '#C92D52' : '#E4F8FA',
+                      color: index === 0 ? 'white' : '#287980',
+                      display: 'grid',
+                      placeItems: 'center',
+                      fontWeight: '800'
+                    }}
+                  >
+                    {index + 1}
                   </div>
-                ))}
-              </div>
 
-            </div>
-          ) : modoBusqueda === 'producto' ? (
-            <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', padding: '20px', borderRadius: '8px', color: '#991b1b' }}>
-              <h3>⚠️️ Producto no reconocido</h3>
-              <p>El código <strong>"{query}"</strong> no existe en la base de datos oficial. No consuma este medicamento hasta verificar su origen.</p>
-            </div>
-          ) : null}
-
-          {/* VISTA LOTE MADRE */}
-          {modoBusqueda === 'lote' && resultadoLote && (
-            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-              <h2>🏭 Lote Madre: {resultadoLote.loteId}</h2>
-              <p><strong>Medicamento:</strong> {resultadoLote.nombreMedicamento}</p>
-              <p><strong>Fabricante:</strong> {resultadoLote.fabricante}</p>
-              <p><strong>Registro Sanitario:</strong> {resultadoLote.registroSanitario}</p>
-              <hr style={{ margin: '20px 0' }} />
-              <h3>📦 Unidades vinculadas a este Lote ({resultadoLote.productos.length}):</h3>
-              
-              <div style={{ display: 'grid', gap: '10px' }}>
-                {resultadoLote.productos.map((p, i) => (
-                  <div key={i} style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <strong>ID Producto: {p.productoId}</strong>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Estado Actual: {p.estadoActual}</p>
-                    </div>
-                    <button 
-                      onClick={() => { setModoBusqueda('producto'); setQuery(p.productoId); buscar(db, p.productoId, 'producto'); }}
-                      style={{ padding: '6px 12px', background: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                  <div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '15px',
+                        flexWrap: 'wrap'
+                      }}
                     >
-                      Ver Timeline Temu
-                    </button>
+                      <h3
+                        style={{
+                          margin: '0 0 5px'
+                        }}
+                      >
+                        {fase.estacion}
+                      </h3>
+
+                      <span
+                        style={{
+                          color: '#7A878F',
+                          fontSize: '13px'
+                        }}
+                      >
+                        {fase.fecha}
+                      </span>
+                    </div>
+
+                    <p
+                      style={{
+                        color: '#65737E',
+                        margin: '0 0 15px'
+                      }}
+                    >
+                      {fase.lugar}
+                    </p>
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(210px, 1fr))',
+                        gap: '12px'
+                      }}
+                    >
+                      <DatoPequeno
+                        titulo="Responsable"
+                        valor={fase.despachador}
+                      />
+
+                      <DatoPequeno
+                        titulo="Transporte / almacenamiento"
+                        valor={fase.tipoTransporte}
+                      />
+
+                      <DatoPequeno
+                        titulo="Tiempo registrado"
+                        valor={fase.tiempoEstancia}
+                      />
+
+                      <DatoPequeno
+                        titulo="Temperatura"
+                        valor={fase.temperatura}
+                      />
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* CREAR LOTE */}
-      {pestana === 'crearLote' && (
-        <form onSubmit={handleCrearLote} style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-          <h3>🏭 Registrar Nuevo Lote Madre (Agrupador)</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <input required placeholder="ID Lote (Ej: GT-9900)" value={nuevoLote.loteId} onChange={e => setNuevoLote({...nuevoLote, loteId: e.target.value})} style={{ padding: '10px' }} />
-            <input required placeholder="Medicamento (Ej: Ibuprofeno 400mg)" value={nuevoLote.nombreMedicamento} onChange={e => setNuevoLote({...nuevoLote, nombreMedicamento: e.target.value})} style={{ padding: '10px' }} />
-            <input required placeholder="Fabricante" value={nuevoLote.fabricante} onChange={e => setNuevoLote({...nuevoLote, fabricante: e.target.value})} style={{ padding: '10px' }} />
-            <input required placeholder="Registro Sanitario" value={nuevoLote.registroSanitario} onChange={e => setNuevoLote({...nuevoLote, registroSanitario: e.target.value})} style={{ padding: '10px' }} />
-          </div>
-          <button type="submit" style={{ marginTop: '15px', padding: '10px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Guardar Lote Madre</button>
-        </form>
-      )}
-
-      {/* CREAR PRODUCTO */}
-      {pestana === 'crearProducto' && (
-        <form onSubmit={handleCrearProducto} style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-          <h3>📦 Registrar Producto Individual (Con Código Único)</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <input required placeholder="ID Producto Único (Ej: PROD-9001)" value={nuevoProducto.productoId} onChange={e => setNuevoProducto({...nuevoProducto, productoId: e.target.value})} style={{ padding: '10px' }} />
-            
-            <select required value={nuevoProducto.loteIdRef} onChange={e => setNuevoProducto({...nuevoProducto, loteIdRef: e.target.value})} style={{ padding: '10px' }}>
-              <option value="">-- Seleccionar Lote Madre --</option>
-              {db.lotes.map((l, i) => (
-                <option key={i} value={l.loteId}>{l.loteId} ({l.nombreMedicamento})</option>
+                </div>
               ))}
-            </select>
+            </div>
+          </section>
 
-            <input required placeholder="Establecimiento / Cliente Destino" value={nuevoProducto.clienteDestino} onChange={e => setNuevoProducto({...nuevoProducto, clienteDestino: e.target.value})} style={{ padding: '10px', gridColumn: 'span 2' }} />
-          </div>
-          <button type="submit" style={{ marginTop: '15px', padding: '10px 20px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Vincular a Lote y Activar Tracking</button>
-        </form>
+          <section
+            style={{
+              marginTop: '30px',
+              background: '#FFF1F4',
+              border: '1px solid #F5CED8',
+              borderRadius: '16px',
+              padding: '22px'
+            }}
+          >
+            <strong
+              style={{
+                color: '#C92D52'
+              }}
+            >
+              ¿Detectaste algo extraño?
+            </strong>
+
+            <p
+              style={{
+                color: '#65737E',
+                lineHeight: '1.6'
+              }}
+            >
+              Puedes reportar un código sospechoso, problemas de cadena de
+              frío, establecimientos no autorizados u otras irregularidades.
+            </p>
+
+            <a
+              href="/denuncias"
+              style={{
+                color: '#C92D52',
+                fontWeight: '800',
+                textDecoration: 'none'
+              }}
+            >
+              Reportar irregularidad →
+            </a>
+          </section>
+        </>
       )}
+    </div>
+  );
+}
 
+function Dato({ titulo, valor }) {
+  return (
+    <div>
+      <span
+        style={{
+          display: 'block',
+          color: '#7A878F',
+          fontSize: '12px',
+          marginBottom: '4px'
+        }}
+      >
+        {titulo}
+      </span>
+
+      <strong
+        style={{
+          color: '#24313A',
+          lineHeight: '1.4'
+        }}
+      >
+        {valor}
+      </strong>
+    </div>
+  );
+}
+
+function DatoPequeno({ titulo, valor }) {
+  return (
+    <div>
+      <span
+        style={{
+          display: 'block',
+          color: '#7A878F',
+          fontSize: '11px',
+          marginBottom: '3px'
+        }}
+      >
+        {titulo}
+      </span>
+
+      <span
+        style={{
+          color: '#34424A',
+          fontSize: '13px'
+        }}
+      >
+        {valor || 'No disponible'}
+      </span>
     </div>
   );
 }

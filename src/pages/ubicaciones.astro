@@ -3,8 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import ModuloUbicaciones from "../components/ModuloUbicaciones.jsx";
 ---
 
-<Layout>
-
-    <ModuloUbicaciones client:load />
-
+<Layout
+  title="Puntos de venta autorizados"
+  active="ubicaciones"
+>
+  <ModuloUbicaciones client:load />
 </Layout>

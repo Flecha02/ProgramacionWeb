@@ -1,544 +1,665 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const medicamentos = [
   {
     id: 1,
-    nombre: 'Paracetamol 500 mg',
+    nombre: 'Paracetamol',
+    principioActivo: 'Paracetamol',
+    concentracion: '500 mg',
     presentacion: '20 tabletas',
-    laboratorio: 'Laboratorio Demo',
-    precios: [
+    forma: 'Tabletas',
+    opciones: [
       {
-        farmacia: 'Farmacia Guatemala',
+        establecimiento: 'Farmacia Central',
         pais: 'Guatemala',
-        precio: 32.50
+        precio: 32.5,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '29/09/2026'
       },
       {
-        farmacia: 'Farmacia Central',
+        establecimiento: 'Farmacia Los Altos',
         pais: 'Guatemala',
-        precio: 27.90
+        precio: 29.75,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '29/09/2026'
       },
       {
-        farmacia: 'Farmacia El Salvador',
+        establecimiento: 'Farmacia Regional',
         pais: 'El Salvador',
-        precio: 21.75
+        precio: 24.9,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '28/09/2026'
       }
     ]
   },
   {
     id: 2,
-    nombre: 'Amoxicilina 500 mg',
-    presentacion: '20 cápsulas',
-    laboratorio: 'Laboratorio Demo',
-    precios: [
+    nombre: 'Ibuprofeno',
+    principioActivo: 'Ibuprofeno',
+    concentracion: '400 mg',
+    presentacion: '20 tabletas',
+    forma: 'Tabletas',
+    opciones: [
       {
-        farmacia: 'Farmacia Guatemala',
+        establecimiento: 'Farmacia Central',
         pais: 'Guatemala',
-        precio: 68.75
+        precio: 44.5,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '29/09/2026'
       },
       {
-        farmacia: 'Farmacia Central',
+        establecimiento: 'Farmacia Los Altos',
         pais: 'Guatemala',
-        precio: 59.50
+        precio: 40.25,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '29/09/2026'
       },
       {
-        farmacia: 'Farmacia El Salvador',
+        establecimiento: 'Farmacia Regional',
         pais: 'El Salvador',
-        precio: 46.25
+        precio: 35.8,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '28/09/2026'
       }
     ]
   },
   {
     id: 3,
-    nombre: 'Ibuprofeno 400 mg',
-    presentacion: '20 tabletas',
-    laboratorio: 'Laboratorio Demo',
-    precios: [
+    nombre: 'Amoxicilina',
+    principioActivo: 'Amoxicilina',
+    concentracion: '500 mg',
+    presentacion: '21 cápsulas',
+    forma: 'Cápsulas',
+    opciones: [
       {
-        farmacia: 'Farmacia Guatemala',
+        establecimiento: 'Farmacia Central',
         pais: 'Guatemala',
-        precio: 45.25
+        precio: 82,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '29/09/2026'
       },
       {
-        farmacia: 'Farmacia Central',
+        establecimiento: 'Farmacia Los Altos',
         pais: 'Guatemala',
-        precio: 39.90
+        precio: 77.5,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '29/09/2026'
       },
       {
-        farmacia: 'Farmacia El Salvador',
+        establecimiento: 'Farmacia Regional',
         pais: 'El Salvador',
-        precio: 31.50
-      }
-    ]
-  },
-  {
-    id: 4,
-    nombre: 'Loratadina 10 mg',
-    presentacion: '10 tabletas',
-    laboratorio: 'Laboratorio Demo',
-    precios: [
-      {
-        farmacia: 'Farmacia Guatemala',
-        pais: 'Guatemala',
-        precio: 38.25
-      },
-      {
-        farmacia: 'Farmacia Central',
-        pais: 'Guatemala',
-        precio: 34.50
-      },
-      {
-        farmacia: 'Farmacia El Salvador',
-        pais: 'El Salvador',
-        precio: 28.75
+        precio: 65.4,
+        moneda: 'GTQ',
+        autorizada: true,
+        actualizado: '28/09/2026'
       }
     ]
   }
 ];
 
 export default function ModuloCompararPrecios() {
-
   const [busqueda, setBusqueda] = useState('');
-  const [medicamentoSeleccionado, setMedicamentoSeleccionado] =
-    useState(medicamentos[0]);
+  const [pais, setPais] = useState('Todos');
+  const [seleccionado, setSeleccionado] = useState(medicamentos[0]);
 
-  const buscarMedicamento = (e) => {
-    e.preventDefault();
+  const resultados = useMemo(() => {
+    const texto = busqueda.toLowerCase();
 
-    const encontrado = medicamentos.find((med) =>
-      med.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
+    return medicamentos.filter(medicamento => {
+      return (
+        medicamento.nombre.toLowerCase().includes(texto) ||
+        medicamento.principioActivo.toLowerCase().includes(texto) ||
+        medicamento.concentracion.toLowerCase().includes(texto)
+      );
+    });
+  }, [busqueda]);
 
-    if (encontrado) {
-      setMedicamentoSeleccionado(encontrado);
-    } else {
-      setMedicamentoSeleccionado(null);
-    }
-  };
+  const opcionesFiltradas = useMemo(() => {
+    if (!seleccionado) return [];
 
-  const seleccionarMedicamento = (med) => {
-    setMedicamentoSeleccionado(med);
-    setBusqueda(med.nombre);
-  };
+    return seleccionado.opciones
+      .filter(opcion => pais === 'Todos' || opcion.pais === pais)
+      .sort((a, b) => a.precio - b.precio);
+  }, [seleccionado, pais]);
 
-  const preciosOrdenados = medicamentoSeleccionado
-    ? [...medicamentoSeleccionado.precios].sort(
-        (a, b) => a.precio - b.precio
-      )
-    : [];
-
-  const precioMasBajo =
-    preciosOrdenados.length > 0 ? preciosOrdenados[0].precio : 0;
-
-  const precioMasAlto =
-    preciosOrdenados.length > 0
-      ? preciosOrdenados[preciosOrdenados.length - 1].precio
+  const precioMinimo =
+    opcionesFiltradas.length > 0
+      ? Math.min(...opcionesFiltradas.map(opcion => opcion.precio))
       : 0;
-
-  const ahorro = precioMasAlto - precioMasBajo;
 
   return (
     <div
       style={{
-        maxWidth: '1100px',
+        maxWidth: '1180px',
         margin: '0 auto',
-        fontFamily: 'system-ui, sans-serif',
-        padding: '20px'
+        padding: '42px 24px 70px'
       }}
     >
+      <section style={{ marginBottom: '30px' }}>
+        <span
+          style={{
+            color: '#C92D52',
+            fontWeight: '800',
+            fontSize: '14px'
+          }}
+        >
+          COMPARACIÓN DE PRECIOS
+        </span>
 
-      {/* ENCABEZADO */}
-
-      <section
-        style={{
-          background: '#b71c1c',
-          color: 'white',
-          padding: '30px',
-          borderRadius: '10px',
-          marginBottom: '25px'
-        }}
-      >
-        <h1 style={{ margin: 0 }}>
-           Comparador de precios de medicamentos
+        <h1
+          style={{
+            fontSize: '2.5rem',
+            margin: '8px 0 12px',
+            color: '#24313A'
+          }}
+        >
+          Compara antes de comprar
         </h1>
 
         <p
           style={{
-            marginTop: '10px',
-            marginBottom: 0,
-            lineHeight: '1.5'
+            color: '#65737E',
+            maxWidth: '800px',
+            lineHeight: '1.7',
+            fontSize: '1.05rem'
           }}
         >
-          Consulta precios de un mismo medicamento en diferentes
-          establecimientos y compara dónde puede encontrarse a menor costo.
+          Consulta opciones.
         </p>
       </section>
 
-   
-
       <section
         style={{
-          background: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.08)'
+          display: 'grid',
+          gridTemplateColumns: '320px 1fr',
+          gap: '24px',
+          alignItems: 'start'
         }}
       >
+        <aside
+  style={{
+    background: 'linear-gradient(135deg, #F4D7DF 0%, #FFF4F7 100%)',
+    border: '1px solid #F0C6D1',
+    borderRadius: '22px',
+    padding: '24px',
+    boxShadow: '0 22px 42px rgba(201, 45, 82, 0.08)'
+  }}
+>
+  <div style={{ marginBottom: '12px' }}>
+    <span
+      style={{
+        display: 'inline-block',
+        background: 'rgba(201, 45, 82, 0.10)',
+        color: '#C92D52',
+        padding: '7px 12px',
+        borderRadius: '999px',
+        fontSize: '12px',
+        fontWeight: '800'
+      }}
+    >
+      BÚSQUEDA DE MEDICAMENTOS
+    </span>
+  </div>
 
-        <h2 style={{ marginTop: 0 }}>
-          Buscar medicamento
-        </h2>
+  <h3 style={{ marginTop: 0 }}>
+    Buscar medicamento
+  </h3>
 
-        <form
-          onSubmit={buscarMedicamento}
+  <input
+    value={busqueda}
+    onChange={e => setBusqueda(e.target.value)}
+    placeholder="Ej. Paracetamol 500 mg"
+    style={{
+      ...inputStyle,
+      background: 'white',
+      border: '1px solid #EAB4C3'
+    }}
+  />
+
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px',
+      marginTop: '16px'
+    }}
+  >
+    {resultados.map(medicamento => {
+      const activo = seleccionado?.id === medicamento.id;
+
+      return (
+        <button
+          key={medicamento.id}
+          onClick={() => setSeleccionado(medicamento)}
           style={{
-            display: 'flex',
-            gap: '10px',
-            flexWrap: 'wrap'
+            textAlign: 'left',
+            border: activo
+              ? '1px solid #C92D52'
+              : '1px solid #E7D6DC',
+            background: activo
+              ? 'linear-gradient(135deg, #C92D52 0%, #DE567A 100%)'
+              : 'rgba(255,255,255,0.9)',
+            color: activo ? 'white' : '#24313A',
+            borderRadius: '14px',
+            padding: '14px',
+            cursor: 'pointer',
+            boxShadow: activo
+              ? '0 14px 28px rgba(201, 45, 82, 0.16)'
+              : 'none'
           }}
         >
-
-          <input
-            type="text"
-            placeholder="Ejemplo: Paracetamol"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
+          <strong
             style={{
-              flex: 1,
-              minWidth: '250px',
-              padding: '12px',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              fontSize: '15px'
-            }}
-          />
-
-          <button
-            type="submit"
-            style={{
-              background: '#b71c1c',
-              color: 'white',
-              border: 'none',
-              padding: '12px 25px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
+              display: 'block',
+              color: activo ? 'white' : '#24313A'
             }}
           >
-            Comparar precios
-          </button>
+            {medicamento.nombre}
+          </strong>
 
-        </form>
-
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            marginTop: '15px',
-            flexWrap: 'wrap'
-          }}
-        >
-
-          {medicamentos.map((med) => (
-
-            <button
-              key={med.id}
-              onClick={() => seleccionarMedicamento(med)}
-              style={{
-                border: '1px solid #ddd',
-                background: '#f7f7f7',
-                padding: '7px 12px',
-                borderRadius: '20px',
-                cursor: 'pointer'
-              }}
-            >
-              {med.nombre}
-            </button>
-
-          ))}
-
-        </div>
-
-      </section>
-
-      {!medicamentoSeleccionado && (
-
-        <div
-          style={{
-            background: '#ffebee',
-            color: '#b71c1c',
-            padding: '15px',
-            borderRadius: '8px'
-          }}
-        >
-          ⚠️ No se encontró el medicamento solicitado.
-        </div>
-
-      )}
-
-      {medicamentoSeleccionado && (
-
-        <>
-
-          {/* INFORMACIÓN DEL PRODUCTO */}
-
-          <section
+          <span
             style={{
-              background: 'white',
-              padding: '20px',
-              borderRadius: '8px',
-              marginBottom: '20px',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.08)'
+              display: 'block',
+              color: activo ? 'rgba(255,255,255,0.86)' : '#65737E',
+              fontSize: '13px',
+              marginTop: '4px'
             }}
           >
+            {medicamento.concentracion} · {medicamento.presentacion}
+          </span>
+        </button>
+      );
+    })}
+  </div>
 
-            <h2
-              style={{
-                color: '#b71c1c',
-                marginTop: 0
-              }}
-            >
-              {medicamentoSeleccionado.nombre}
-            </h2>
+  {resultados.length === 0 && (
+    <p
+      style={{
+        color: '#65737E',
+        lineHeight: '1.6'
+      }}
+    >
+      No encontramos medicamentos con ese criterio.
+    </p>
+  )}
+</aside>
 
-            <p>
-              <strong>Presentación:</strong>{' '}
-              {medicamentoSeleccionado.presentacion}
-            </p>
-
-            <p>
-              <strong>Fabricante:</strong>{' '}
-              {medicamentoSeleccionado.laboratorio}
-            </p>
-
-          </section>
-
-          {/* RESUMEN */}
-
-          <section
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '15px',
-              marginBottom: '20px'
-            }}
-          >
-
-            <div
-              style={{
-                background: '#e8f5e9',
-                padding: '20px',
-                borderRadius: '8px'
-              }}
-            >
-              <small>Precio más bajo</small>
-
-              <h2
+        <main>
+          {seleccionado && (
+            <>
+              <section
                 style={{
-                  color: '#2e7d32',
-                  margin: '5px 0'
+                  background: 'white',
+                  border: '1px solid #DDE7E8',
+                  borderRadius: '18px',
+                  padding: '26px',
+                  marginBottom: '20px'
                 }}
               >
-                Q{precioMasBajo.toFixed(2)}
-              </h2>
-            </div>
-
-            <div
-              style={{
-                background: '#ffebee',
-                padding: '20px',
-                borderRadius: '8px'
-              }}
-            >
-              <small>Precio más alto</small>
-
-              <h2
-                style={{
-                  color: '#b71c1c',
-                  margin: '5px 0'
-                }}
-              >
-                Q{precioMasAlto.toFixed(2)}
-              </h2>
-            </div>
-
-            <div
-              style={{
-                background: '#fff3e0',
-                padding: '20px',
-                borderRadius: '8px'
-              }}
-            >
-              <small>Ahorro posible</small>
-
-              <h2
-                style={{
-                  color: '#e65100',
-                  margin: '5px 0'
-                }}
-              >
-                Q{ahorro.toFixed(2)}
-              </h2>
-            </div>
-
-          </section>
-
-          {/* TABLA */}
-
-          <section
-            style={{
-              background: 'white',
-              padding: '20px',
-              borderRadius: '8px',
-              overflowX: 'auto',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.08)'
-            }}
-          >
-
-            <h2 style={{ marginTop: 0 }}>
-              Comparación de precios
-            </h2>
-
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse'
-              }}
-            >
-
-              <thead>
-
-                <tr
+                <div
                   style={{
-                    background: '#b71c1c',
-                    color: 'white'
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: '20px',
+                    flexWrap: 'wrap'
                   }}
                 >
-
-                  <th style={{ padding: '12px', textAlign: 'left' }}>
-                    Establecimiento
-                  </th>
-
-                  <th style={{ padding: '12px', textAlign: 'left' }}>
-                    País
-                  </th>
-
-                  <th style={{ padding: '12px', textAlign: 'left' }}>
-                    Precio
-                  </th>
-
-                  <th style={{ padding: '12px', textAlign: 'left' }}>
-                    Diferencia
-                  </th>
-
-                </tr>
-
-              </thead>
-
-              <tbody>
-
-                {preciosOrdenados.map((item, index) => {
-
-                  const diferencia =
-                    item.precio - precioMasBajo;
-
-                  return (
-
-                    <tr
-                      key={index}
+                  <div>
+                    <span
                       style={{
-                        background:
-                          index === 0
-                            ? '#e8f5e9'
-                            : 'white',
-                        borderBottom: '1px solid #ddd'
+                        color: '#C92D52',
+                        fontWeight: '800',
+                        fontSize: '13px'
                       }}
                     >
+                      MEDICAMENTO EQUIVALENTE
+                    </span>
 
-                      <td
+                    <h2
+                      style={{
+                        margin: '6px 0 8px',
+                        fontSize: '2rem'
+                      }}
+                    >
+                      {seleccionado.nombre}
+                    </h2>
+
+                    <p
+                      style={{
+                        margin: 0,
+                        color: '#65737E'
+                      }}
+                    >
+                      {seleccionado.principioActivo} ·{' '}
+                      {seleccionado.concentracion} ·{' '}
+                      {seleccionado.presentacion}
+                    </p>
+                  </div>
+
+                  <select
+                    value={pais}
+                    onChange={e => setPais(e.target.value)}
+                    style={{
+                      ...inputStyle,
+                      width: '190px',
+                      height: 'fit-content'
+                    }}
+                  >
+                    <option value="Todos">Todos los países</option>
+                    <option value="Guatemala">Guatemala</option>
+                    <option value="El Salvador">El Salvador</option>
+                  </select>
+                </div>
+              </section>
+
+              <section
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px'
+                }}
+              >
+                {opcionesFiltradas.map((opcion, index) => {
+                  const ahorro = opcion.precio - precioMinimo;
+                  const mejorPrecio = index === 0;
+
+                  return (
+                    <article
+                      key={`${opcion.establecimiento}-${opcion.pais}`}
+                      style={{
+                        background: 'white',
+                        border: mejorPrecio
+                          ? '1px solid #64D5DE'
+                          : '1px solid #DDE7E8',
+                        borderRadius: '16px',
+                        padding: '22px'
+                      }}
+                    >
+                      <div
                         style={{
-                          padding: '12px',
-                          fontWeight:
-                            index === 0
-                              ? 'bold'
-                              : 'normal'
+                          display: 'grid',
+                          gridTemplateColumns: '1.5fr 0.8fr 0.7fr',
+                          gap: '20px',
+                          alignItems: 'center'
                         }}
                       >
+                        <div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: '8px',
+                              alignItems: 'center',
+                              flexWrap: 'wrap'
+                            }}
+                          >
+                            <h3
+                              style={{
+                                margin: 0
+                              }}
+                            >
+                              {opcion.establecimiento}
+                            </h3>
 
-                        {item.farmacia}
+                            {opcion.autorizada && (
+                              <span
+                                style={{
+                                  background: '#EAF7EF',
+                                  color: '#1E6D3B',
+                                  borderRadius: '20px',
+                                  padding: '5px 8px',
+                                  fontSize: '11px',
+                                  fontWeight: '800'
+                                }}
+                              >
+                                ✓ Autorizado
+                              </span>
+                            )}
 
-                        {index === 0 && (
+                            {mejorPrecio && (
+                              <span
+                                style={{
+                                  background: '#E8F8FA',
+                                  color: '#287980',
+                                  borderRadius: '20px',
+                                  padding: '5px 8px',
+                                  fontSize: '11px',
+                                  fontWeight: '800'
+                                }}
+                              >
+                                Precio más bajo
+                              </span>
+                            )}
+                          </div>
+
+                          <p
+                            style={{
+                              color: '#65737E',
+                              margin: '7px 0 0'
+                            }}
+                          >
+                            {opcion.pais}
+                          </p>
+                        </div>
+
+                        <div>
                           <span
                             style={{
-                              marginLeft: '8px',
-                              background: '#2e7d32',
-                              color: 'white',
-                              padding: '3px 7px',
-                              borderRadius: '10px',
+                              display: 'block',
+                              color: '#7A878F',
                               fontSize: '11px'
                             }}
                           >
-                            MÁS BARATO
+                            Precio
                           </span>
-                        )}
 
-                      </td>
+                          <strong
+                            style={{
+                              fontSize: '1.6rem',
+                              color: '#24313A'
+                            }}
+                          >
+                            Q{opcion.precio.toFixed(2)}
+                          </strong>
+                        </div>
 
-                      <td style={{ padding: '12px' }}>
-                        {item.pais}
-                      </td>
+                        <div>
+                          <span
+                            style={{
+                              display: 'block',
+                              color: '#7A878F',
+                              fontSize: '11px'
+                            }}
+                          >
+                            Diferencia
+                          </span>
 
-                      <td
+                          <strong
+                            style={{
+                              color:
+                                ahorro === 0
+                                  ? '#1E6D3B'
+                                  : '#65737E'
+                            }}
+                          >
+                            {ahorro === 0
+                              ? 'Menor precio'
+                              : `+ Q${ahorro.toFixed(2)}`}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div
                         style={{
-                          padding: '12px',
-                          fontWeight: 'bold'
+                          borderTop: '1px solid #E7EEEE',
+                          marginTop: '16px',
+                          paddingTop: '14px',
+                          color: '#7A878F',
+                          fontSize: '12px'
                         }}
                       >
-                        Q{item.precio.toFixed(2)}
-                      </td>
-
-                      <td style={{ padding: '12px' }}>
-
-                        {diferencia === 0
-                          ? 'Mejor precio'
-                          : `+ Q${diferencia.toFixed(2)}`}
-
-                      </td>
-
-                    </tr>
-
+                        Última actualización: {opcion.actualizado}
+                      </div>
+                    </article>
                   );
-
                 })}
 
-              </tbody>
+                {opcionesFiltradas.length === 0 && (
+                  <div
+                    style={{
+                      background: '#FFF1F4',
+                      border: '1px solid #F5CED8',
+                      borderRadius: '16px',
+                      padding: '22px'
+                    }}
+                  >
+                    <strong style={{ color: '#C92D52' }}>
+                      No hay precios disponibles
+                    </strong>
 
-            </table>
+                    <p
+                      style={{
+                        color: '#65737E',
+                        marginBottom: 0
+                      }}
+                    >
+                      No existen datos para el país seleccionado.
+                    </p>
+                  </div>
+                )}
+              </section>
+            </>
+          )}
+        </main>
+      </section>
 
-          </section>
-
-          {/* AVISO */}
-
-          <div
+      <section
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '18px',
+          marginTop: '30px'
+        }}
+      >
+        <div
+          style={{
+            background: '#E8F8FA',
+            borderRadius: '16px',
+            padding: '22px'
+          }}
+        >
+          <span
             style={{
-              marginTop: '20px',
-              padding: '15px',
-              borderRadius: '8px',
-              background: '#fff8e1',
-              color: '#5d4037',
-              fontSize: '14px'
+              color: '#287980',
+              fontWeight: '800',
+              fontSize: '13px'
             }}
           >
-            ⚠️ <strong>Prototipo académico:</strong> los precios
-            presentados son datos simulados y únicamente demuestran
-            cómo funcionaría un sistema real de comparación.
-          </div>
+            COMPARACIÓN CORRECTA
+          </span>
 
-        </>
+          <h3 style={{ margin: '8px 0 10px' }}>
+            No comparamos solo por nombre
+          </h3>
 
-      )}
+          <p
+            style={{
+              color: '#65737E',
+              lineHeight: '1.6',
+              marginBottom: 0
+            }}
+          >
+            Para evitar resultados engañosos se considera principio activo,
+            concentración, forma farmacéutica y cantidad de unidades.
+          </p>
+        </div>
 
+        <div
+          style={{
+            background: '#FFF1F4',
+            border: '1px solid #F5CED8',
+            borderRadius: '16px',
+            padding: '22px'
+          }}
+        >
+          <span
+            style={{
+              color: '#C92D52',
+              fontWeight: '800',
+              fontSize: '13px'
+            }}
+          >
+            ORIGEN DE LOS PRECIOS
+          </span>
+
+          <h3 style={{ margin: '8px 0 10px' }}>
+            Datos simulados en esta fase
+          </h3>
+
+          <p
+            style={{
+              color: '#65737E',
+              lineHeight: '1.6',
+              marginBottom: 0
+            }}
+          >
+            Una implementación real podría integrar fuentes oficiales,
+            establecimientos participantes o servicios de consulta de precios.
+          </p>
+        </div>
+
+        <div
+          style={{
+            background: '#F8F9F4',
+            border: '1px solid #E1E1C7',
+            borderRadius: '16px',
+            padding: '22px'
+          }}
+        >
+          <span
+            style={{
+              color: '#7C7C43',
+              fontWeight: '800',
+              fontSize: '13px'
+            }}
+          >
+            OBJETIVO
+          </span>
+
+          <h3 style={{ margin: '8px 0 10px' }}>
+            Más opciones de compra
+          </h3>
+
+          <p
+            style={{
+              color: '#65737E',
+              lineHeight: '1.6',
+              marginBottom: 0
+            }}
+          >
+            El comparador complementa la trazabilidad ayudando al usuario a
+            encontrar alternativas formales y comparar precios antes de
+            recurrir a canales informales.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
+
+const inputStyle = {
+  width: '100%',
+  padding: '13px 14px',
+  border: '1px solid #CBD8DA',
+  borderRadius: '9px',
+  background: 'white',
+  color: '#24313A',
+  outline: 'none'
+};
